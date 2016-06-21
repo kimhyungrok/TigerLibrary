@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="StarRankView">
+        <attr name="icon_size" format="dimension"/>
+    </declare-styleable>
+
+    <!-- CrossListView -->
+    <declare-styleable name="CrossListView">
+        <attr name="header_height" format="dimension"/>
+        <attr name="fixedArea_height" format="dimension"/>
+        <attr name="dividerHeight" format="dimension"/>
+    </declare-styleable>
+
+    <!-- page indicator -->
+    <declare-styleable name="PageIndicator">
+        <attr name="setIcon" format="integer"/>
+        <attr name="setIconSize" format="dimension"/>
+        <attr name="pageCount" format="integer"/>
+    </declare-styleable>
+</resources>
