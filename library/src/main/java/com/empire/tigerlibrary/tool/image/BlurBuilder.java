@@ -9,6 +9,12 @@ import android.renderscript.RenderScript;
 import android.renderscript.ScriptIntrinsicBlur;
 import android.view.View;
 
+/**
+ * help for handling and making blur Bitmap image
+ *
+ * @author hyungrok.kim
+ *
+ */
 public class BlurBuilder {
     public static final int STRONG_BLUR = 0;
     public static final int WEAK_BLUR = 1;
@@ -16,6 +22,13 @@ public class BlurBuilder {
     private static final float BITMAP_SCALE = 0.4f;
     private static final float BLUR_RADIUS = 7.5f;
 
+    /**
+     * get blur image after extracting Bitmap from view
+     *
+     * @param view
+     * @param intensity
+     * @return
+     */
     public static Bitmap blur(View view, int intensity) {
         if (view != null && view.getWidth() > 0 && view.getHeight() > 0) {
             return blur(view.getContext(), getScreenshot(view), intensity);
@@ -24,6 +37,14 @@ public class BlurBuilder {
         return null;
     }
 
+    /**
+     * get blur image
+     *
+     * @param context
+     * @param image
+     * @param intensity
+     * @return
+     */
     public static Bitmap blur(Context context, Bitmap image, int intensity) {
         float bitmapScale = (intensity == STRONG_BLUR) ? BITMAP_SCALE / 2 : BITMAP_SCALE;
         float blurRadius = (intensity == STRONG_BLUR) ? 25 : BLUR_RADIUS;
@@ -46,6 +67,12 @@ public class BlurBuilder {
         return outputBitmap;
     }
 
+    /**
+     * extract Bitmap from view
+     *
+     * @param v
+     * @return
+     */
     private static Bitmap getScreenshot(View v) {
         Bitmap b = Bitmap.createBitmap(v.getWidth(), v.getHeight(), Bitmap.Config.ARGB_8888);
         Canvas c = new Canvas(b);

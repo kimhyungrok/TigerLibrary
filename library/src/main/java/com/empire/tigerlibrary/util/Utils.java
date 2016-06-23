@@ -7,9 +7,13 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Environment;
+import android.provider.Settings.Secure;
+import android.telephony.TelephonyManager;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.AbsoluteSizeSpan;
@@ -18,13 +22,16 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.empire.tigerlibrary.R;
 import com.empire.tigerlibrary.tool.SimpleActionListener;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Currency;
+import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 /**
  * set class which is composed of useful methods
@@ -334,6 +341,76 @@ public class Utils {
      */
     public static String getFilePath() {
         return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator;
+    }
+
+    /**
+     * get device UUID
+     *
+     * @param context
+     * @return
+     */
+    public static String getDeviceUUID(final Context context) {
+        UUID uuid = null;
+        final String androidId = Secure.getString(context.getContentResolver(), Secure.ANDROID_ID);
+
+        try {
+            if (!"9774d56d682e549c".equals(androidId)) {
+                uuid = UUID.nameUUIDFromBytes(androidId.getBytes("utf8"));
+            } else {
+                final String deviceId = ((TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE)).getDeviceId();
+                uuid = deviceId != null ? UUID.nameUUIDFromBytes(deviceId.getBytes("utf8")) : UUID.randomUUID();
+            }
+        } catch (UnsupportedEncodingException e) {
+            e.getStackTrace();
+        }
+
+        return uuid != null ? uuid.toString() : null;
+    }
+
+    /**
+     * get address using by latitude and longitude
+     *
+     * @param latitude
+     * @param longitude
+     * @return
+     */
+    public static String getAddress(Context context, double latitude, double longitude) {
+        StringBuilder address = new StringBuilder();
+
+        try {
+            Geocoder geocoder = new Geocoder(context, Locale.getDefault());
+            List<Address> addressList = geocoder.getFromLocation(latitude, longitude, 1);
+
+            if (addressList != null && !addressList.isEmpty()) {
+                Address addrss = addressList.get(0);
+
+                if (addrss != null) {
+                    address.append(addrss.getAdminArea());
+                    address.append(" ");
+                    address.append(addrss.getLocality());
+                    address.append(" ");
+                    address.append(addrss.getThoroughfare());
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return address.toString();
+    }
+
+    /**
+     * check whether device's GPS is enabled
+     *
+     * @param context
+     * @return
+     */
+    public static boolean isUsingGPS(Context context) {
+        LocationManager locationMaanger = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        boolean isGpsProviderEnabled = locationMaanger.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        boolean isNetworkProviderEnabled = locationMaanger.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+        return isGpsProviderEnabled || isNetworkProviderEnabled;
     }
 }
 
