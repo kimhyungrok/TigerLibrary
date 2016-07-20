@@ -3,6 +3,7 @@ package com.empire.tigerlibrary.util;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -446,5 +447,19 @@ public class ViewUtil {
         }
 
         textView.setPaintFlags(paintFlags);
+    }
+
+    /**
+     * get action bar height
+     * @param context
+     * @return
+     */
+    public static int getActionBarHeight(Context context) {
+        final TypedArray styledAttributes = context.getTheme().obtainStyledAttributes(
+                new int[] { android.R.attr.actionBarSize });
+        int actionBarSize = (int) styledAttributes.getDimension(0, 0);
+        styledAttributes.recycle();
+
+        return actionBarSize;
     }
 }
