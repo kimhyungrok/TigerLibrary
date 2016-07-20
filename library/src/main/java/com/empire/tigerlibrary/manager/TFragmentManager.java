@@ -3,6 +3,7 @@ package com.empire.tigerlibrary.manager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
@@ -15,12 +16,13 @@ import com.empire.tigerlibrary.tool.SimpleActionListener;
  * sub fragment manager
  * Created by lordvader on 2015. 8. 28..
  */
-public class TFragmentManager {
-    private static TFragmentManager mInstance;
+public class TFragmentManager implements InstantSingletonManager.SingleTon {
+    private static TFragmentManager sInstance;
     private final int ANIMATION_DURATION = 150;
     private FragmentManager mFragmentManager;
     private View mUiTargetView;
     private UiAnimationListener mUiAnimationListener;
+    private boolean mIsApplyCustomAnimation;
 
     private TFragmentManager(FragmentManager fragmentManager) {
         mFragmentManager = fragmentManager;
@@ -32,11 +34,12 @@ public class TFragmentManager {
      * @return
      */
     public static synchronized TFragmentManager getInstane(FragmentManager fragmentManager) {
-        if (mInstance == null) {
-            mInstance = new TFragmentManager(fragmentManager);
+        if (sInstance == null) {
+            sInstance = new TFragmentManager(fragmentManager);
+            InstantSingletonManager.getInstane().add(sInstance);
         }
 
-        return mInstance;
+        return sInstance;
     }
 
     /**
@@ -45,14 +48,30 @@ public class TFragmentManager {
      * @return
      */
     public static boolean isInstanceExist() {
-        return mInstance != null;
+        return sInstance != null;
     }
 
     /**
      * clear TaskFragmentManager instance
      */
     public static void clear() {
-        mInstance = null;
+        sInstance = null;
+    }
+
+    @Override
+    public void kill() {
+        if (isInstanceExist()) {
+            clear();
+        }
+    }
+
+    /**
+     * check whether apply defined custom animation when change fragemnt
+     *
+     * @param isApplyCustomAnimation
+     */
+    public void applyCustomAnimation(boolean isApplyCustomAnimation) {
+        mIsApplyCustomAnimation = isApplyCustomAnimation;
     }
 
     /**
@@ -94,7 +113,11 @@ public class TFragmentManager {
             try {
                 FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
                 String tag = fragment.getClass().getSimpleName();
-                fragmentTransaction.setCustomAnimations(R.anim.attach_fragment_launch_in, 0, 0, R.anim.attach_fragment_finish_out);
+
+                if (mIsApplyCustomAnimation) {
+                    fragmentTransaction.setCustomAnimations(R.anim.attach_fragment_launch_in, 0, 0, R.anim.attach_fragment_finish_out);
+                }
+
                 fragmentTransaction.add(containerId, fragment, tag);
                 fragmentTransaction.addToBackStack(tag);
                 fragmentTransaction.commitAllowingStateLoss();
@@ -129,6 +152,8 @@ public class TFragmentManager {
      */
     public boolean popFragment() {
         boolean popResult = false;
+
+        Log.v("VV", "TFragmentManager / popFragment() / mFragmentManager.getBackStackEntryCount() = " + mFragmentManager.getBackStackEntryCount());
 
         if (mFragmentManager.getBackStackEntryCount() > 0) {
             popResult = mFragmentManager.popBackStackImmediate();
