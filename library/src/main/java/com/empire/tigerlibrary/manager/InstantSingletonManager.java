@@ -7,7 +7,7 @@ import java.util.ArrayList;
  * Created by lordvader on 2016. 4. 7..
  */
 public class InstantSingletonManager {
-    private static InstantSingletonManager mInstance;
+    private static InstantSingletonManager sInstance;
     private ArrayList<SingleTon> mInstantSingleTonList;
 
     private InstantSingletonManager() {
@@ -20,11 +20,11 @@ public class InstantSingletonManager {
      * @return
      */
     public static synchronized InstantSingletonManager getInstane() {
-        if (mInstance == null) {
-            mInstance = new InstantSingletonManager();
+        if (sInstance == null) {
+            sInstance = new InstantSingletonManager();
         }
 
-        return mInstance;
+        return sInstance;
     }
 
     /**
@@ -33,14 +33,14 @@ public class InstantSingletonManager {
      * @return
      */
     public static boolean isInstanceExist() {
-        return mInstance != null;
+        return sInstance != null;
     }
 
     /**
      * clear InstantSingletonManager instance
      */
     public static void clear() {
-        mInstance = null;
+        sInstance = null;
     }
 
     /**
