@@ -3,7 +3,6 @@ package com.empire.tigerlibrary.manager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
@@ -153,8 +152,6 @@ public class TFragmentManager implements InstantSingletonManager.SingleTon {
     public boolean popFragment() {
         boolean popResult = false;
 
-        Log.v("VV", "TFragmentManager / popFragment() / mFragmentManager.getBackStackEntryCount() = " + mFragmentManager.getBackStackEntryCount());
-
         if (mFragmentManager.getBackStackEntryCount() > 0) {
             popResult = mFragmentManager.popBackStackImmediate();
             runPopEnterUiAnimation();
@@ -202,6 +199,12 @@ public class TFragmentManager implements InstantSingletonManager.SingleTon {
             translateAnimation.setDuration(ANIMATION_DURATION);
             mUiTargetView.startAnimation(translateAnimation);
         }
+    }
+
+    public boolean onBackPressed() {
+        Fragment fragment = getCurrentFocusedFragment();
+
+        return false;
     }
 
     /**
