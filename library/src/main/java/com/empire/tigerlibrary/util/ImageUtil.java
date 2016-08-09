@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.view.View;
 import android.view.ViewGroup;
@@ -186,14 +187,12 @@ public class ImageUtil {
                 }
 
                 View mirrorView = new View(context);
-                BitmapDrawable blurImageDrawable = ImageUtil.getBlurImage(context, wallpaperBitmap, (wallpaperBitmap.getWidth() / 2 - adjustWidth /
-                        2), adjustWidth);
+                BitmapDrawable blurImageDrawable = ImageUtil.getBlurImage(context, wallpaperBitmap, (wallpaperBitmap.getWidth() / 2 - adjustWidth / 2), adjustWidth);
 
                 // apply darken color filter
                 if (darkenAlpha > 0f && darkenAlpha < 1f) {
                     int colorFilterValue = (int) (255 * (1f - darkenAlpha));
-                    blurImageDrawable.setColorFilter(Color.rgb(colorFilterValue, colorFilterValue, colorFilterValue), android.graphics.PorterDuff
-                            .Mode.MULTIPLY);
+                    blurImageDrawable.setColorFilter(Color.rgb(colorFilterValue, colorFilterValue, colorFilterValue), android.graphics.PorterDuff.Mode.MULTIPLY);
                 }
 
                 mirrorView.setBackgroundDrawable(blurImageDrawable);
@@ -426,5 +425,26 @@ public class ImageUtil {
         bitmap.setPixels(pix, 0, w, 0, 0, w, h);
 
         return (bitmap);
+    }
+
+    /**
+     * get orientation of image which is matched to filePath
+     *
+     * @param filePath
+     * @return
+     */
+    public static int getImageOrientation(String filePath) {
+        int orientation = 0;
+
+        if (!Utils.isEmptyString(filePath)) {
+            try {
+                ExifInterface exif = new ExifInterface(filePath);
+                orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return orientation;
     }
 }
