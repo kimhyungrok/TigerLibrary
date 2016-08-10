@@ -15,6 +15,8 @@ import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -265,8 +267,7 @@ public class ViewUtil {
             view.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         }
 
-        view.measure(MeasureSpec.makeMeasureSpec(ViewUtil.getDisplayWidth(activity), MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(height,
-                MeasureSpec.AT_MOST));
+        view.measure(MeasureSpec.makeMeasureSpec(ViewUtil.getDisplayWidth(activity), MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(height, MeasureSpec.AT_MOST));
 
         LayoutParams footerViewLayoutParam = view.getLayoutParams();
         footerViewLayoutParam.width = view.getMeasuredWidth();
@@ -451,15 +452,25 @@ public class ViewUtil {
 
     /**
      * get action bar height
+     *
      * @param context
      * @return
      */
     public static int getActionBarHeight(Context context) {
-        final TypedArray styledAttributes = context.getTheme().obtainStyledAttributes(
-                new int[] { android.R.attr.actionBarSize });
+        final TypedArray styledAttributes = context.getTheme().obtainStyledAttributes(new int[] { android.R.attr.actionBarSize });
         int actionBarSize = (int) styledAttributes.getDimension(0, 0);
         styledAttributes.recycle();
 
         return actionBarSize;
+    }
+
+    /**
+     * set fullscreen mode after hiding title bar and status bar
+     *
+     * @param activity
+     */
+    public static void setFullScreenMode(Activity activity) {
+        activity.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        activity.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
     }
 }
