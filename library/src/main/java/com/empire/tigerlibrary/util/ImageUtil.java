@@ -187,12 +187,14 @@ public class ImageUtil {
                 }
 
                 View mirrorView = new View(context);
-                BitmapDrawable blurImageDrawable = ImageUtil.getBlurImage(context, wallpaperBitmap, (wallpaperBitmap.getWidth() / 2 - adjustWidth / 2), adjustWidth);
+                BitmapDrawable blurImageDrawable = ImageUtil.getBlurImage(context, wallpaperBitmap, (wallpaperBitmap.getWidth() / 2 - adjustWidth /
+                        2), adjustWidth);
 
                 // apply darken color filter
                 if (darkenAlpha > 0f && darkenAlpha < 1f) {
                     int colorFilterValue = (int) (255 * (1f - darkenAlpha));
-                    blurImageDrawable.setColorFilter(Color.rgb(colorFilterValue, colorFilterValue, colorFilterValue), android.graphics.PorterDuff.Mode.MULTIPLY);
+                    blurImageDrawable.setColorFilter(Color.rgb(colorFilterValue, colorFilterValue, colorFilterValue), android.graphics.PorterDuff
+                            .Mode.MULTIPLY);
                 }
 
                 mirrorView.setBackgroundDrawable(blurImageDrawable);
@@ -440,6 +442,21 @@ public class ImageUtil {
             try {
                 ExifInterface exif = new ExifInterface(filePath);
                 orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+
+                switch (orientation) {
+                    case ExifInterface.ORIENTATION_ROTATE_90: {
+                        orientation = 90;
+                        break;
+                    }
+                    case ExifInterface.ORIENTATION_ROTATE_180: {
+                        orientation = 180;
+                        break;
+                    }
+                    case ExifInterface.ORIENTATION_ROTATE_270: {
+                        orientation = 270;
+                        break;
+                    }
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
