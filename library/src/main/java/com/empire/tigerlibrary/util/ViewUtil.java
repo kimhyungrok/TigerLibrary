@@ -20,6 +20,7 @@ import android.view.WindowManager;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.empire.tigerlibrary.tool.SimpleActionListener;
 import com.empire.tigerlibrary.tool.motion.OnSingleClickListener;
 import com.empire.tigerlibrary.view.SystemBarTintManager;
 
@@ -267,7 +268,8 @@ public class ViewUtil {
             view.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         }
 
-        view.measure(MeasureSpec.makeMeasureSpec(ViewUtil.getDisplayWidth(activity), MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(height, MeasureSpec.AT_MOST));
+        view.measure(MeasureSpec.makeMeasureSpec(ViewUtil.getDisplayWidth(activity), MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(height,
+                MeasureSpec.AT_MOST));
 
         LayoutParams footerViewLayoutParam = view.getLayoutParams();
         footerViewLayoutParam.width = view.getMeasuredWidth();
@@ -457,7 +459,7 @@ public class ViewUtil {
      * @return
      */
     public static int getActionBarHeight(Context context) {
-        final TypedArray styledAttributes = context.getTheme().obtainStyledAttributes(new int[] { android.R.attr.actionBarSize });
+        final TypedArray styledAttributes = context.getTheme().obtainStyledAttributes(new int[]{android.R.attr.actionBarSize});
         int actionBarSize = (int) styledAttributes.getDimension(0, 0);
         styledAttributes.recycle();
 
@@ -465,12 +467,60 @@ public class ViewUtil {
     }
 
     /**
-     * set fullscreen mode after hiding title bar and status bar
+     * set fullscreen mode after hiding title bar and status bar.
+     * It have to call when create View Contents onCreate() in Activity
      *
      * @param activity
      */
     public static void setFullScreenMode(Activity activity) {
         activity.requestWindowFeature(Window.FEATURE_NO_TITLE);
         activity.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+    }
+
+    /**
+     * switch between full screen and normal screen.
+     * It is able to call freely in any case.
+     *
+     * @param activity
+     * @param fullscreen
+     */
+    public static void setFullscreen(Activity activity, boolean fullscreen) {
+        setFullscreen(activity, fullscreen, null);
+    }
+
+    /**
+     * switch between full screen and normal screen.
+     * It is able to call freely in any case, and also handling listener
+     *
+     * @param activity
+     * @param fullscreen
+     * @param listener
+     */
+    public static void setFullscreen(Activity activity, boolean fullscreen, SimpleActionListener listener) {
+        WindowManager.LayoutParams attrs = activity.getWindow().getAttributes();
+
+        if (fullscreen) {
+            attrs.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
+        } else {
+            attrs.flags &= ~WindowManager.LayoutParams.FLAG_FULLSCREEN;
+        }
+
+        activity.getWindow().setAttributes(attrs);
+
+        // run listener
+        if (listener != null) {
+            listener.doAction();
+        }
+    }
+
+    /**
+     * check whether current screen mode is full screen or not
+     *
+     * @param activity
+     * @return
+     */
+    public static boolean isFullScreen(Activity activity) {
+        WindowManager.LayoutParams attrs = activity.getWindow().getAttributes();
+        return ((attrs.flags & WindowManager.LayoutParams.FLAG_FULLSCREEN) == WindowManager.LayoutParams.FLAG_FULLSCREEN);
     }
 }
