@@ -12,6 +12,7 @@ import android.location.Geocoder;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Environment;
+import android.provider.Settings;
 import android.provider.Settings.Secure;
 import android.telephony.TelephonyManager;
 import android.text.Spannable;
@@ -411,6 +412,16 @@ public class Utils {
         boolean isNetworkProviderEnabled = locationMaanger.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 
         return isGpsProviderEnabled || isNetworkProviderEnabled;
+    }
+
+    /**
+     * check whether device's auto rotation setting is on
+     *
+     * @param context
+     * @return
+     */
+    public static boolean isAutoRotationSettingOn(Context context) {
+        return android.provider.Settings.System.getInt(context.getContentResolver(), Settings.System.ACCELEROMETER_ROTATION, 0) == 1;
     }
 }
 
