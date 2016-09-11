@@ -12,6 +12,8 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.ExifInterface;
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -31,6 +33,7 @@ public class ImageUtil {
     public static final int BITMAP_QUALITY_HIGH = 0;
     public static final int BITMAP_QUALITY_LOW = 1;
     private static final float BLUR_DARKEN_ALPHA = 0.3f;
+    private static final int FAST_BLUR_RADIUS = 40;
 
     /**
      * @param view
@@ -186,19 +189,24 @@ public class ImageUtil {
                     adjustWidth = wallpaperBitmapWidth;
                 }
 
-                View mirrorView = new View(context);
-                BitmapDrawable blurImageDrawable = ImageUtil.getBlurImage(context, wallpaperBitmap, (wallpaperBitmap.getWidth() / 2 - adjustWidth /
-                        2), adjustWidth);
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN) {
 
-                // apply darken color filter
-                if (darkenAlpha > 0f && darkenAlpha < 1f) {
-                    int colorFilterValue = (int) (255 * (1f - darkenAlpha));
-                    blurImageDrawable.setColorFilter(Color.rgb(colorFilterValue, colorFilterValue, colorFilterValue), android.graphics.PorterDuff
-                            .Mode.MULTIPLY);
+                } else {
+                    View mirrorView = new View(context);
+                    BitmapDrawable blurImageDrawable = ImageUtil.getBlurImage(context, wallpaperBitmap, (wallpaperBitmap.getWidth() / 2 -
+                            adjustWidth / 2), adjustWidth);
+
+                    // apply darken color filter
+                    if (darkenAlpha > 0f && darkenAlpha < 1f) {
+                        int colorFilterValue = (int) (255 * (1f - darkenAlpha));
+                        blurImageDrawable.setColorFilter(Color.rgb(colorFilterValue, colorFilterValue, colorFilterValue), android.graphics
+                                .PorterDuff.Mode.MULTIPLY);
+                    }
+
+                    mirrorView.setBackgroundDrawable(blurImageDrawable);
+                    rootView.addView(mirrorView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams
+                            .MATCH_PARENT));
                 }
-
-                mirrorView.setBackgroundDrawable(blurImageDrawable);
-                rootView.addView(mirrorView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             }
         }
     }
@@ -464,4 +472,44 @@ public class ImageUtil {
 
         return orientation;
     }
+
+    /*******************************************************************************
+     * inner class and interface
+     *******************************************************************************/
+    /**
+     * w
+     */
+    private class FastBlurWorkerTask extends AsyncTask<Bitmap, Void, Bitmap> {
+        private Context context;
+        private ViewGroup rootView;
+
+        public FastBlurWorkerTask(Context context, ViewGroup rootView) {
+
+        }
+
+
+        @Override
+        protected Bitmap doInBackground(Bitmap... params) {
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            View mirrorView = new View(context);
+            BitmapDrawable blurImageDrawable = ImageUtil.getBlurImage(context, wallpaperBitmap, (wallpaperBitmap.getWidth() / 2 -
+                    adjustWidth / 2), adjustWidth);
+
+            // apply darken color filter
+            if (darkenAlpha > 0f && darkenAlpha < 1f) {
+                int colorFilterValue = (int) (255 * (1f - darkenAlpha));
+                blurImageDrawable.setColorFilter(Color.rgb(colorFilterValue, colorFilterValue, colorFilterValue), android.graphics
+                        .PorterDuff.Mode.MULTIPLY);
+            }
+
+            mirrorView.setBackgroundDrawable(blurImageDrawable);
+            rootView.addView(mirrorView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams
+                    .MATCH_PARENT));
+        }
+    }
+
 }
