@@ -189,23 +189,22 @@ public class ImageUtil {
                     adjustWidth = wallpaperBitmapWidth;
                 }
 
-                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN) {
+                int x = (wallpaperBitmap.getWidth() / 2 - adjustWidth / 2);
 
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN) {
+                    new FastBlurWorkerTask(context, rootView, x, adjustWidth, darkenAlpha).execute(wallpaperBitmap);
                 } else {
                     View mirrorView = new View(context);
-                    BitmapDrawable blurImageDrawable = ImageUtil.getBlurImage(context, wallpaperBitmap, (wallpaperBitmap.getWidth() / 2 -
-                            adjustWidth / 2), adjustWidth);
+                    BitmapDrawable blurImageDrawable = ImageUtil.getBlurImage(context, wallpaperBitmap, x, adjustWidth);
 
                     // apply darken color filter
                     if (darkenAlpha > 0f && darkenAlpha < 1f) {
                         int colorFilterValue = (int) (255 * (1f - darkenAlpha));
-                        blurImageDrawable.setColorFilter(Color.rgb(colorFilterValue, colorFilterValue, colorFilterValue), android.graphics
-                                .PorterDuff.Mode.MULTIPLY);
+                        blurImageDrawable.setColorFilter(Color.rgb(colorFilterValue, colorFilterValue, colorFilterValue), android.graphics.PorterDuff.Mode.MULTIPLY);
                     }
 
                     mirrorView.setBackgroundDrawable(blurImageDrawable);
-                    rootView.addView(mirrorView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams
-                            .MATCH_PARENT));
+                    rootView.addView(mirrorView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
                 }
             }
         }
@@ -477,39 +476,48 @@ public class ImageUtil {
      * inner class and interface
      *******************************************************************************/
     /**
-     * w
+     * handling background wallpaper blur effect by asynchronously
      */
-    private class FastBlurWorkerTask extends AsyncTask<Bitmap, Void, Bitmap> {
+    private static class FastBlurWorkerTask extends AsyncTask<Bitmap, Void, BitmapDrawable> {
         private Context context;
         private ViewGroup rootView;
+        private int x;
+        private int width;
+        private float darkenAlpha;
 
-        public FastBlurWorkerTask(Context context, ViewGroup rootView) {
-
+        public FastBlurWorkerTask(Context context, ViewGroup rootView, int x, int width, float darkenAlpha) {
+            this.context = context;
+            this.rootView = rootView;
+            this.x = x;
+            this.width = width;
+            this.darkenAlpha = darkenAlpha;
         }
 
-
         @Override
-        protected Bitmap doInBackground(Bitmap... params) {
+        protected BitmapDrawable doInBackground(Bitmap... params) {
+            if (params[0] != null) {
+                Bitmap cropBitmap = Bitmap.createBitmap(params[0], x, 0, width, params[0].getHeight());
+                Bitmap blurBitmap = fastBlur(cropBitmap, FAST_BLUR_RADIUS);
+                return new BitmapDrawable(context.getResources(), blurBitmap);
+            }
+
             return null;
         }
 
         @Override
-        protected void onPostExecute(Bitmap bitmap) {
-            View mirrorView = new View(context);
-            BitmapDrawable blurImageDrawable = ImageUtil.getBlurImage(context, wallpaperBitmap, (wallpaperBitmap.getWidth() / 2 -
-                    adjustWidth / 2), adjustWidth);
+        protected void onPostExecute(BitmapDrawable bitmapDrawable) {
+            if (bitmapDrawable != null) {
+                View mirrorView = new View(context);
 
-            // apply darken color filter
-            if (darkenAlpha > 0f && darkenAlpha < 1f) {
-                int colorFilterValue = (int) (255 * (1f - darkenAlpha));
-                blurImageDrawable.setColorFilter(Color.rgb(colorFilterValue, colorFilterValue, colorFilterValue), android.graphics
-                        .PorterDuff.Mode.MULTIPLY);
+                // apply darken color filter
+                if (darkenAlpha > 0f && darkenAlpha < 1f) {
+                    int colorFilterValue = (int) (255 * (1f - darkenAlpha));
+                    bitmapDrawable.setColorFilter(Color.rgb(colorFilterValue, colorFilterValue, colorFilterValue), android.graphics.PorterDuff.Mode.MULTIPLY);
+                }
+
+                mirrorView.setBackgroundDrawable(bitmapDrawable);
+                rootView.addView(mirrorView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             }
-
-            mirrorView.setBackgroundDrawable(blurImageDrawable);
-            rootView.addView(mirrorView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams
-                    .MATCH_PARENT));
         }
     }
-
 }
