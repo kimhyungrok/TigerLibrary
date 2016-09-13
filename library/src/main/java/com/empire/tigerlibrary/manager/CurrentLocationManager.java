@@ -16,10 +16,10 @@ import android.util.Log;
  *
  * @author hyungrok.kim
  */
-public class CurrentLocationManager {
+public class CurrentLocationManager implements InstantSingletonManager.SingleTon {
     public static final float DEFAULT_LATITUDE = 37.40249f;
     public static final float DEFAULT_LONGITUDE = 127.10293f;
-    private static CurrentLocationManager mInstance;
+    private static CurrentLocationManager sInstance;
     private final int UPDATE_INTERVAL = 5 * 1000;
     private final int MINIMUM_DISTANCE = 0;
     /**
@@ -59,17 +59,34 @@ public class CurrentLocationManager {
      * @return
      */
     public synchronized static CurrentLocationManager getInstance(Context context) {
-        if (mInstance == null) {
-            mInstance = new CurrentLocationManager(context);
+        if (sInstance == null) {
+            sInstance = new CurrentLocationManager(context);
+            InstantSingletonManager.getInstane().add(sInstance);
         }
-        return mInstance;
+        return sInstance;
+    }
+
+    /**
+     * check whether singleton instance exist
+     *
+     * @return
+     */
+    public static boolean isInstanceExist() {
+        return sInstance != null;
     }
 
     /**
      * clear CurrentLocationManager instance
      */
     public static void clear() {
-        mInstance = null;
+        sInstance = null;
+    }
+
+    @Override
+    public void kill() {
+        if (isInstanceExist()) {
+            clear();
+        }
     }
 
     /**
@@ -86,8 +103,8 @@ public class CurrentLocationManager {
                 boolean isGpsProviderEnabled = mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
                 boolean isNetworkProviderEnabled = mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 
-                if (((Build.VERSION.SDK_INT < Build.VERSION_CODES.M) || ContextCompat.checkSelfPermission(mContext, android
-                        .Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)) {
+                if (((Build.VERSION.SDK_INT < Build.VERSION_CODES.M) || ContextCompat.checkSelfPermission(mContext, android.Manifest.permission
+                        .ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)) {
                     if (isGpsProviderEnabled) {
                         location = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                     }
@@ -117,8 +134,8 @@ public class CurrentLocationManager {
      * refresh current location
      */
     public void refreshCurrentLocation() {
-        if (((Build.VERSION.SDK_INT < Build.VERSION_CODES.M) || ContextCompat.checkSelfPermission(mContext, android
-                .Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)) {
+        if (((Build.VERSION.SDK_INT < Build.VERSION_CODES.M) || ContextCompat.checkSelfPermission(mContext, android.Manifest.permission
+                .ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)) {
             mLocationManager.requestLocationUpdates(UPDATE_INTERVAL, MINIMUM_DISTANCE, mCriteria, mLocationListener, null);
         }
     }
@@ -150,8 +167,8 @@ public class CurrentLocationManager {
 
         @Override
         public void onLocationChanged(Location location) {
-            if (((Build.VERSION.SDK_INT < Build.VERSION_CODES.M) || ContextCompat.checkSelfPermission(mContext, android
-                    .Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)) {
+            if (((Build.VERSION.SDK_INT < Build.VERSION_CODES.M) || ContextCompat.checkSelfPermission(mContext, android.Manifest.permission
+                    .ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)) {
                 mLocationManager.removeUpdates(this);
             }
 

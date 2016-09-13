@@ -12,11 +12,11 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.ExifInterface;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.empire.tigerlibrary.tool.AsyncTasker;
 import com.empire.tigerlibrary.tool.image.BlurBuilder;
 
 import java.io.BufferedOutputStream;
@@ -198,7 +198,8 @@ public class ImageUtil {
                     applyDarken(blurImageDrawable, darkenAlpha);
                     View mirrorView = new View(context);
                     mirrorView.setBackgroundDrawable(blurImageDrawable);
-                    rootView.addView(mirrorView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                    rootView.addView(mirrorView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams
+                            .MATCH_PARENT));
                 }
             }
         }
@@ -486,7 +487,7 @@ public class ImageUtil {
     /**
      * handling background wallpaper blur effect by asynchronously
      */
-    private static class FastBlurWorkerTask extends AsyncTask<Bitmap, Void, BitmapDrawable> {
+    private static class FastBlurWorkerTask extends AsyncTasker<Bitmap, Void, BitmapDrawable> {
         private Context context;
         private ViewGroup rootView;
         private int x;
@@ -494,6 +495,7 @@ public class ImageUtil {
         private float darkenAlpha;
 
         public FastBlurWorkerTask(Context context, ViewGroup rootView, int x, int width, float darkenAlpha) {
+            super();
             this.context = context;
             this.rootView = rootView;
             this.x = x;
@@ -520,6 +522,8 @@ public class ImageUtil {
                 mirrorView.setBackgroundDrawable(bitmapDrawable);
                 rootView.addView(mirrorView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             }
+
+            super.onPostExecute(bitmapDrawable);
         }
     }
 }
