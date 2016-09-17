@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -33,6 +34,7 @@ public class ImageUtil {
     public static final int BITMAP_QUALITY_HIGH = 0;
     public static final int BITMAP_QUALITY_LOW = 1;
     private static final float BLUR_DARKEN_ALPHA = 0.3f;
+    private static final float BLUR_CROP_SCALE = 0.25f;
     private static final int FAST_BLUR_RADIUS = 40;
 
     /**
@@ -175,7 +177,6 @@ public class ImageUtil {
      * @return
      */
     public static void setBlurWallpaper(ViewGroup rootView, Context context, float darkenAlpha) {
-        Bitmap blurBitmap = null;
         Drawable wallpaperDrawable = WallpaperManager.getInstance(context).getDrawable();
 
         if (wallpaperDrawable != null && wallpaperDrawable instanceof BitmapDrawable) {
@@ -190,17 +191,12 @@ public class ImageUtil {
                 }
 
                 int x = (wallpaperBitmap.getWidth() / 2 - adjustWidth / 2);
+                BitmapDrawable blurImageDrawable = ImageUtil.getBlurImage(context, wallpaperBitmap, x, adjustWidth);
+                applyDarken(blurImageDrawable, darkenAlpha);
 
-                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN) {
-                    new FastBlurWorkerTask(context, rootView, x, adjustWidth, darkenAlpha).execute(wallpaperBitmap);
-                } else {
-                    BitmapDrawable blurImageDrawable = ImageUtil.getBlurImage(context, wallpaperBitmap, x, adjustWidth);
-                    applyDarken(blurImageDrawable, darkenAlpha);
-                    View mirrorView = new View(context);
-                    mirrorView.setBackgroundDrawable(blurImageDrawable);
-                    rootView.addView(mirrorView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams
-                            .MATCH_PARENT));
-                }
+                View mirrorView = new View(context);
+                mirrorView.setBackgroundDrawable(blurImageDrawable);
+                rootView.addView(mirrorView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             }
         }
     }
@@ -228,8 +224,17 @@ public class ImageUtil {
      * @return
      */
     public static BitmapDrawable getBlurImage(Context context, Bitmap wallpaperBitmap, int x, int width) {
-        Bitmap cropBitmap = Bitmap.createBitmap(wallpaperBitmap, x, 0, width, wallpaperBitmap.getHeight());
-        Bitmap blurBitmap = BlurBuilder.blur(context, cropBitmap, BlurBuilder.STRONG_BLUR);
+        Matrix matrix = new Matrix();
+        matrix.postScale(BLUR_CROP_SCALE, BLUR_CROP_SCALE);
+        Bitmap cropBitmap = Bitmap.createBitmap(wallpaperBitmap, x, 0, width, wallpaperBitmap.getHeight(), matrix, false);
+        Bitmap blurBitmap;
+
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN) {
+            blurBitmap = fastBlur(cropBitmap, FAST_BLUR_RADIUS);
+        } else {
+            blurBitmap = BlurBuilder.blur(context, cropBitmap, BlurBuilder.STRONG_BLUR);
+        }
+
         return new BitmapDrawable(context.getResources(), blurBitmap);
     }
 
@@ -486,6 +491,7 @@ public class ImageUtil {
      *******************************************************************************/
     /**
      * handling background wallpaper blur effect by asynchronously
+     * TODO: This code have to maintain util making reference AsyncTask using by AsyncTasker
      */
     private static class FastBlurWorkerTask extends AsyncTasker<Bitmap, Void, BitmapDrawable> {
         private Context context;
@@ -506,7 +512,9 @@ public class ImageUtil {
         @Override
         protected BitmapDrawable doInBackground(Bitmap... params) {
             if (params[0] != null) {
-                Bitmap cropBitmap = Bitmap.createBitmap(params[0], x, 0, width, params[0].getHeight());
+                Matrix matrix = new Matrix();
+                matrix.postScale(0.25f, 0.25f);
+                Bitmap cropBitmap = Bitmap.createBitmap(params[0], x, 0, width, params[0].getHeight(), matrix, false);
                 Bitmap blurBitmap = fastBlur(cropBitmap, FAST_BLUR_RADIUS);
                 return new BitmapDrawable(context.getResources(), blurBitmap);
             }
