@@ -20,13 +20,24 @@ android {
 
         }
     }
+
+    lintOptions {
+        abortOnError false
+    }
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:23.2.0'
+//    compile 'com.android.support:appcompat-v7:23.2.0'
+    compile 'com.android.support:appcompat-v7:23.0.1'
     compile 'com.android.support:recyclerview-v7:23.2.1'
+
     compile files('libs/volley.jar')
     compile files('libs/httpclient-android-modified.jar')
     compile files('libs/httpmime-4.3.6.jar')
+
+    // for imageslider
+//    compile 'com.android.support:design:22.2.1'
+    compile 'com.squareup.picasso:picasso:2.5.2'
+    compile 'com.nineoldandroids:library:2.4.0'
 }
